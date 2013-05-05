@@ -1,0 +1,78 @@
+<apex:page standardController="Opportunity" extensions="PrdEntryExtNetImpact" action="{!priceBookCheck}" >
+ <apex:sectionHeader Title="Manage Services" subtitle="{!opportunity.Name}"/>
+ <apex:messages style="color:red"/>
+
+    <script type='text/javascript'>
+        var waitTime = 1;
+        var countDown = waitTime+1;
+        var started = false;
+        function resetTimer(){ countDown=waitTime+1;
+            if(started==false){ started=true; runCountDown(); } }
+        function runCountDown(){ countDown--;
+            if(countDown<=0){ fetchResults(); started=false; }
+            else{ window.setTimeout(runCountDown,1000); } }
+    </script>
+     
+ <apex:form >
+  <apex:outputPanel id="mainBody">               
+
+  <apex:pageBlock title="Existing Services" id="selected">                    
+   <apex:pageblockTable value="{!shoppingCart}" var="s">                                    
+    <apex:column headerValue="Product Name" value="{!s.PriceBookEntry.Product2.Name}"/>                  
+    <apex:column headerValue="Quantity">
+     <apex:inputField value="{!s.Quantity}" style="width:70px" required="true" onkeyup="refreshTotals();"/>
+    </apex:column>                    
+    <apex:column headerValue="Unit Price">
+     <apex:inputField value="{!s.UnitPrice}" style="width:70px" required="true" onkeyup="refreshTotals();"/>
+    </apex:column>                    
+    <apex:column headerValue="Start Date">
+     <apex:inputField value="{!s.ServiceDate}"/>
+    </apex:column>                    
+    <apex:column headerValue="End Date">
+     <apex:inputField value="{!s.End_Date__c}"/>
+    </apex:column>                        
+    <apex:column headerValue="Please Read">
+     <apex:inputField value="{!s.PriceBookEntry.Product2.IfCampaigntheExpoorMemb__c}"/>
+    </apex:column> 
+<!--    <apex:column headerValue="Description"> -->
+<!--     <apex:inputField value="{!s.Description}" required="false"/> -->
+<!--    </apex:column> -->
+    <apex:column >
+     <apex:commandLink value="Delete" action="{!removeFromShoppingCart}" reRender="selected,availableservices" immediate="true">
+      <apex:param value="{!s.PriceBookEntryId}" assignTo="{!toUnselect}" name="toUnselect"/>
+     </apex:commandLink>
+    </apex:column>                 
+   </apex:pageblockTable>                     
+   <apex:pageBlockButtons >
+    <apex:commandButton action="{!onSave}" value="Save"/>
+    <apex:commandButton action="{!onCancel}" value="Cancel" immediate="true"/>
+   </apex:pageBlockButtons>            
+  </apex:pageBlock>
+
+  <apex:pageBlock >
+   <apex:outputPanel styleClass="search">
+     <b>Search Services:&nbsp;&nbsp;&nbsp;</b>
+   </apex:outputPanel>
+   <apex:actionRegion renderRegionOnly="false" immediate="true">              
+    <apex:actionFunction name="fetchResults" action="{!updateAvailableList}" reRender="availableservices"/>                    
+    <apex:inputText value="{!searchString}" onkeydown="if(event.keyCode==13){this.blur();} else{resetTimer();}" style="width:300px"/>
+    &nbsp;&nbsp;
+    <apex:actionStatus id="searchStatus" startText="searching..." stopText=" "/>                    
+   </apex:actionRegion>            
+   <br/>
+   <br/>            
+   <apex:outputPanel id="availableservices">             
+    <apex:pageBlockTable value="{!AvailableProducts}" var="a">                    
+     <apex:column width="5%"  headerValue="Add">
+      <apex:commandButton value="Add" action="{!addToShoppingCart}" reRender="selected,availableservices" immediate="true">
+       <apex:param value="{!a.Id}" assignTo="{!toSelect}" name="toSelect"/>
+      </apex:commandButton>
+     </apex:column>                        
+     <apex:column headerValue="Product Name" value="{!a.Product2.Name}" />                      
+    </apex:pageBlockTable>                    
+   </apex:outputPanel>            
+  </apex:pageBlock>
+            
+  </apex:outputPanel>
+ </apex:form>
+</apex:page>
